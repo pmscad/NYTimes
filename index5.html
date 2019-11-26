@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="styles4.css">
+    <title>New York Times Search</title>
+    <script
+      src="https://kit.fontawesome.com/7fa246b183.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <h1 class="header">
+      <i class="far fa-newspaper"></i>New York Times Search
+    </h1>
+    <div class="container">
+      <h2 class="heading"><i class="far fa-list-alt"></i> Search Parameters</h2>
+      <div class="sub-container">
+        <form action="" id="form-data">
+          <label for="search_term">Search Terms:</label>
+          <input type="text" id="search_term" />
+
+          <label for="num_records">Number of Records to Retrieve:</label>
+          <input type="text" id="num_records" value="5" />
+
+          <label for="start_date">Start Date (Optional):</label>
+          <input type="text" id="start_date" placeholder="yyyymmdd"/>
+
+          <label for="end_date">End Date (Optional):</label>
+          <input type="text" id="end_date" placeholder="yyyymmdd"/>
+
+          <button class="button inactive" id='search' type="submit">
+            <i class="fas fa-search">Search</i>
+          </button>
+
+          <button class="button inactive" id='clear' type="submit">
+            <i class="fas fa-trash-alt"></i>Clear Results</i>
+          </button>
+        </form>
+      </div>
+    </div>
+        <div class="container">
+          <h2 class="heading">
+            <i class="fas fa-list-alt">Top Articles</i>
+          </h2>
+          <div id="content" class="sub-container">
+            <!-- <ul class="articles_list"></ul> -->
+          </div>
+        </div>
+
+  </body>
+  <script>
+	
+	document.getElementById('clear').addEventListener('clear' , function(){
+		document.getElementById('content').innerHTML = "";
+	});
+  
+  
+    document.getElementById('search').addEventListener('click' , postNYTimesData)
+
+	function isStringEmpty(string) {
+		return (!string || 0 === string.length);
+	}
+
+
+    function postNYTimesData (event) {
+      event.preventDefault();
+
+      let searchTerm = document.getElementById('search_term').value;
+      let numRecords = document.getElementById('num_records').value;
+
+      <!-- optional elements -->
+      let startDate = document.getElementById('start_date').value;
+      let endDate = document.getElementById('end_date').value;	  
+	 
+	 
+	  let endDateQueryString = '';
+	  if (!isStringEmpty(endDate)){
+		endDateQueryString = '&end_date='+endDate;
+	  }
+		
+	  let startDateQueryString = '';
+	  if (!isStringEmpty(startDate)){
+		startDateQueryString = '&begin_date='+startDate;
+	  }
+     
+      fetch ('https://api.nytimes.com/svc/search/v2/articlesearch.json?q='+searchTerm+'&page='+numRecords+startDateQueryString+endDateQueryString+'&api-key=R1a31F4tBjCUaM2ho8GtIFsrSdtXt30M' , {
+        method:'GET',
+        headers : new Headers(),        
+      }).then(res => res.json())
+        .then(data => {
+			let doc = data.response.docs;			
+			let content = document.getElementById('content');
+			
+			for ( let i = 0; i < doc.length; i++) {						
+				let para = document.createElement('p');					
+				let webURLNode = document.createTextNode("web url - " + doc[i].web_url);
+				let headLineNode = document.createTextNode("headline - " + doc[i].headline.main);
+				let snippetNode = document.createTextNode("snippet - " + doc[i].snippet);				
+				let sourceNode = document.createTextNode("news source - " + doc[i].source);
+				
+				para.appendChild(headLineNode);				
+				let br = document.createElement('br');
+				para.appendChild(br);
+				para.appendChild(snippetNode);
+				
+				br = document.createElement('br');
+				para.appendChild(br);
+				para.appendChild(sourceNode);
+				
+				br = document.createElement('br');
+				para.appendChild(br);
+				para.appendChild(webURLNode);				
+				
+				content.appendChild(para);				
+			}
+								
+			console.log(data);			
+			
+		 })
+        .catch((err) => console.log(err))
+				
+    };
+
+  </script>
+
+</html>
